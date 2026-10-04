@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tapActivity, stopActivity, currentActivity, fillGap, daysWithGaps, importLifeCycle, unmappedNames } from '../ui/viewmodel.js';
+import { tapActivity, stopActivity, currentActivity, fillGap, daysWithGaps, backfillQueue, importLifeCycle, unmappedNames } from '../ui/viewmodel.js';
 import { defaultState } from '../core/store.js';
 import { buildDays } from '../core/timeline.js';
 import { localMs, toHM } from '../core/time.js';
@@ -125,4 +125,25 @@ test('a gap after the 04:00 cutoff on a long day can be filled, and closes', () 
   s = fillGap(s, { start: T('2026-03-03 04:10'), end: T('2026-03-03 05:00') }, [{ label: 'Scroll', minutes: null }]);
   assert.deepEqual(gapsOn(s), []);
   assert.ok(s.taps.length <= 2);
+});
+
+test('the backfill queue holds only days with gaps inside the horizon, newest first', () => {
+  const gappy = (date) => [blk(`${date} 07:00`, `${date} 12:00`, 'Home')];
+  const s = { ...defaultState(), backfillDays: 3, blocks: ['2026-03-02', '2026-03-03', '2026-03-04', '2026-03-05'].flatMap(gappy) };
+  // Today is 03-05 with a 3-day window: 03-05, 03-04, 03-03. 03-02 is outside.
+  assert.deepEqual(backfillQueue(s, '2026-03-05').map((d) => d.date), ['2026-03-05', '2026-03-04', '2026-03-03']);
+});
+
+test('filling the newest queued day brings the next one up', () => {
+  const gappy = (date) => [blk(`${date} 07:00`, `${date} 12:00`, 'Home')];
+  let s = { ...defaultState(), blocks: ['2026-03-03', '2026-03-04'].flatMap(gappy) };
+  assert.equal(backfillQueue(s, '2026-03-04')[0].date, '2026-03-04');
+  const gaps = backfillQueue(s, '2026-03-04')[0].gaps;
+  for (const g of gaps) s = fillGap(s, g, [{ label: 'Reading', minutes: null }]);
+  assert.equal(backfillQueue(s, '2026-03-04')[0].date, '2026-03-03');
+});
+
+test('a day just outside the horizon is not queued even when it has gaps', () => {
+  const s = { ...defaultState(), backfillDays: 1, blocks: [blk('2026-03-04 07:00', '2026-03-04 12:00', 'Home')] };
+  assert.deepEqual(backfillQueue(s, '2026-03-05'), []);
 });

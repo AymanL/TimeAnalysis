@@ -1,7 +1,7 @@
 import { createBrowserStore, loadAppState, saveAppState } from '../core/store.js';
 import { nowLocalMs } from '../core/time.js';
 import { dueForReview } from '../core/tasks.js';
-import { daysWithGaps } from './viewmodel.js';
+import { backfillQueue } from './viewmodel.js';
 import * as today from './today.js';
 import * as backfill from './backfill.js';
 import * as tasks from './tasks.js';
@@ -41,7 +41,7 @@ function render() {
   actionTable = { goto: (d) => { ui.tab = d.tab; render(); window.scrollTo(0, 0); }, ...screen.actions(context()) };
   const day = today.todayDate(current, nowFn());
   const due = dueForReview(current.tasks, day).length;
-  const gaps = daysWithGaps(current).length;
+  const gaps = backfillQueue(current, day).length;
   for (const b of $tabs.querySelectorAll('button')) {
     b.setAttribute('aria-current', b.dataset.tab === ui.tab ? 'page' : 'false');
     const badge = b.dataset.tab === 'tasks' ? due : b.dataset.tab === 'backfill' ? gaps : 0;

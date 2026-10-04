@@ -1,7 +1,7 @@
 import { MINUTE, dateOf, toHM, frenchDayName } from '../core/time.js';
 import { buildDaysFromState } from '../core/timeline.js';
 import { buildHandoff, dayDigest, pendingExportDays } from '../core/export.js';
-import { daysWithGaps, fillGap, importLifeCycle } from './viewmodel.js';
+import { backfillQueue, fillGap, importLifeCycle } from './viewmodel.js';
 import { todayDate } from './today.js';
 import { dayMonth, esc } from './dom.js';
 
@@ -12,7 +12,8 @@ const fmt = (ms) => `${Math.round(ms / MINUTE)} min`;
 export function render({ state, now, ui }) {
   const today = todayDate(state, now);
   const missing = state.blocks.length === 0;
-  const withGaps = daysWithGaps(state);
+  const queue = backfillQueue(state, today);
+  const withGaps = queue.slice(0, 1);
   const pending = pendingExportDays(state, today);
   const all = buildDaysFromState(state);
   const gapCount = (date) => all.find((d) => d.date === date)?.gaps.length ?? 0;
@@ -50,6 +51,7 @@ export function render({ state, now, ui }) {
             </div>
           </div>`).join('')}
       </div>`).join('')}
+    ${queue.length > 1 ? `<p class="muted">${queue.length - 1} more day${queue.length > 2 ? 's' : ''} to fill after this one.</p>` : ''}
 
     <h2>Export</h2>
     <div class="card">

@@ -60,3 +60,9 @@ test('taps are part of the finished days', () => {
   const h = buildHandoff(s, NOW);
   assert.ok(h.days.find((d) => d.date === '2026-03-03').activities.some((a) => a.activity === 'Gaming'));
 });
+
+test('with no export start date, the whole imported history is handed off', () => {
+  const s = { ...defaultState(), blocks };
+  const h = buildHandoff(s, NOW);
+  assert.deepEqual(h.days.map((d) => d.date), ['2026-03-02', '2026-03-03']);
+});

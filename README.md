@@ -77,8 +77,11 @@ offline. Planning and decisions live in
    a different activity inside it.
 2. In the evening, export from Life Cycle (Settings → Advanced → Database →
    Export database), then in the app open **Backfill** and **Import CSV**.
-3. Fill any gaps shown (pick an activity, tap a duration). Whatever is left
-   unfilled is exported as "Non renseigné".
+3. Fill the gaps shown, one day at a time, newest first (pick an activity, tap a
+   duration). Only the last 7 days are offered (**Settings → Days to fill in
+   Backfill**); older gaps, and anything left unfilled, are exported as
+   "Non renseigné". The whole imported Life Cycle history is handed off, so you
+   never need to trim the CSV.
 4. Tap **Share hand-off file** and save it to the Mac (AirDrop or iCloud
    Drive), for example as `data/handoff/handoff.json`.
 5. On the Mac, write the day files and the task backup:

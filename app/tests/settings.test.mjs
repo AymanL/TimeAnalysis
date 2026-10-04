@@ -10,6 +10,7 @@ const sample = {
   highPriority: ['Gym'],
   cutoffHour: 5,
   exportFrom: '2026-03-01',
+  backfillDays: 5,
 };
 
 test('a valid settings file is read as it is', () => {
@@ -50,4 +51,16 @@ test('wrong field types are rejected and name the field', () => {
 
 test('an unknown field is rejected, so a typo does not silently do nothing', () => {
   assert.throws(() => parseSettings(JSON.stringify({ version: 1, activitys: [] })), /activitys/);
+});
+
+test('the backfill horizon must be a whole number of at least 1', () => {
+  for (const bad of [0, -2, 1.5, '7']) {
+    assert.throws(() => parseSettings(JSON.stringify({ version: 1, backfillDays: bad })), /backfillDays/);
+  }
+});
+
+test('the backfill horizon round-trips through export and import', () => {
+  const s = applySettings(defaultState(), parseSettings(JSON.stringify({ version: 1, backfillDays: 10 })));
+  assert.equal(settingsFromState(s).backfillDays, 10);
+  assert.equal(defaultState().backfillDays, 7);
 });

@@ -16,7 +16,8 @@ export const defaultState = () => ({
   cutoffHour: 4,
   tasks: emptyTasks(),
   exportedDays: {},    // date -> { digest, at } of the version last handed off
-  exportFrom: null,    // first date to hand off; null = the date of the first tap
+  exportFrom: null,    // first date to hand off; null = the earliest imported block or tap
+  backfillDays: 7,     // only the last N days are offered in Backfill; older gaps export as unfilled
 });
 
 const KEY = 'app-state';

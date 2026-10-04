@@ -48,6 +48,8 @@ export function render({ state, version, ui }) {
         <input type="number" min="0" max="12" data-action="cutoff" value="${state.cutoffHour}"></label>
       <label class="field">First day to hand off
         <input type="date" data-action="export-from" value="${esc(state.exportFrom ?? '')}"></label>
+      <label class="field">Days to fill in Backfill
+        <input type="number" min="1" max="60" data-action="backfill-days" value="${state.backfillDays}"></label>
     </div>
     <p class="muted version">Version ${esc(version)}</p>
   `;
@@ -95,6 +97,7 @@ export function actions({ state, setState, pickSettingsFile }) {
       setState((s) => ({ ...s, highPriority: names }), { rerender: false });
     },
     cutoff: (d, el) => { const h = Number(el.value); if (h >= 0 && h <= 12) setState((s) => ({ ...s, cutoffHour: h }), { rerender: false }); },
+    'backfill-days': (d, el) => { const n = Math.floor(Number(el.value)); if (n >= 1) setState((s) => ({ ...s, backfillDays: n }), { rerender: false }); },
     'export-from': (d, el) => setState((s) => ({ ...s, exportFrom: el.value || null }), { rerender: false }),
   };
 }

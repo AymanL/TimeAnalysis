@@ -1,5 +1,5 @@
 // Screen logic with no DOM, so it can be tested without a browser.
-import { MINUTE, dateOf, dayOf, toHM } from '../core/time.js';
+import { MINUTE, addDays, dateOf, dayOf, toHM } from '../core/time.js';
 import { addTap, latestTap } from '../core/store.js';
 import { buildDaysFromState, DEFAULT_LABEL_MAP } from '../core/timeline.js';
 import { blockKey, mergeBlocks, parseLifeCycleCsv } from '../core/lifecycle.js';
@@ -25,6 +25,13 @@ export function daysWithGaps(state) {
   return buildDaysFromState(state)
     .filter((d) => d.gaps.length > 0)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+// Days worth asking about: gaps inside the last `backfillDays` days, newest first.
+// Older gaps are not offered; they are exported as unfilled.
+export function backfillQueue(state, today) {
+  const oldest = addDays(today, -((state.backfillDays ?? 7) - 1));
+  return daysWithGaps(state).filter((d) => d.date >= oldest && d.date <= today);
 }
 
 // Fill part of a gap with activities. Each part is { label, minutes } and minutes null

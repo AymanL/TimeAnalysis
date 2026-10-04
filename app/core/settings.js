@@ -2,7 +2,7 @@
 // mapping outside the code: export from one device, import on another.
 
 export const SETTINGS_VERSION = 1;
-const FIELDS = ['version', 'activities', 'labelMap', 'highPriority', 'cutoffHour', 'exportFrom'];
+const FIELDS = ['version', 'activities', 'labelMap', 'highPriority', 'cutoffHour', 'exportFrom', 'backfillDays'];
 
 const isStringList = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string' && x.trim() !== '');
 const isStringMap = (v) =>
@@ -29,13 +29,16 @@ export function parseSettings(text) {
   if ('exportFrom' in data && data.exportFrom !== null && !/^\d{4}-\d{2}-\d{2}$/.test(data.exportFrom)) {
     throw new Error('"exportFrom" must be a date like 2026-03-01.');
   }
+  if ('backfillDays' in data && !(Number.isInteger(data.backfillDays) && data.backfillDays >= 1)) {
+    throw new Error('"backfillDays" must be a whole number of at least 1.');
+  }
   return data;
 }
 
 // Only the fields the file contains are changed.
 export function applySettings(state, settings) {
   const next = { ...state };
-  for (const key of ['activities', 'labelMap', 'highPriority', 'cutoffHour', 'exportFrom']) {
+  for (const key of ['activities', 'labelMap', 'highPriority', 'cutoffHour', 'exportFrom', 'backfillDays']) {
     if (key in settings) next[key] = settings[key];
   }
   return next;
@@ -48,4 +51,5 @@ export const settingsFromState = (s) => ({
   highPriority: s.highPriority,
   cutoffHour: s.cutoffHour,
   exportFrom: s.exportFrom,
+  backfillDays: s.backfillDays,
 });

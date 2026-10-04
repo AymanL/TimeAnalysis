@@ -5,8 +5,11 @@ export const HANDOFF_VERSION = 1;
 
 function exportStart(state) {
   if (state.exportFrom) return state.exportFrom;
-  const firstTap = state.taps.reduce((min, t) => Math.min(min, t.at), Infinity);
-  return Number.isFinite(firstTap) ? dateOf(firstTap) : null;
+  const first = Math.min(
+    state.taps.reduce((min, t) => Math.min(min, t.at), Infinity),
+    state.blocks.reduce((min, b) => Math.min(min, b.start), Infinity),
+  );
+  return Number.isFinite(first) ? dateOf(first) : null;
 }
 
 // A short fingerprint of a finished day, so a day is handed off again whenever its
