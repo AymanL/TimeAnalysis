@@ -1,0 +1,14 @@
+# Personal data: everything private lives in data/ and is never committed or published
+data/
+
+# Safety net: the same files if they are ever put back in the project root
+LC_export.csv
+Planning.md
+days/
+handoff/
+analysis.local.json
+
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+node_modules/
