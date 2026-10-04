@@ -91,7 +91,10 @@ offline. Planning and decisions live in
    ```
 
    Only the dates in the file are written to `data/days/`; other files there are
-   untouched, and running it twice on the same file gives the same result. A
+   untouched, and a day file you already have (for example from `Planning.md`) is
+   never overwritten: the script skips that date and says so. Days it wrote
+   itself are tracked in `data/handoff/written_days.json` so they can still be
+   updated, and running it twice on the same file gives the same result. A
    day handed off in the evening has no sleep time yet: the next hand-off
    replaces it once Life Cycle has the Sleep block.
 6. Re-run `Analyse_semaine.ipynb` as above.

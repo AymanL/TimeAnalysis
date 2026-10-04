@@ -111,6 +111,21 @@ class HandoffToDays(unittest.TestCase):
             loaded = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual({"date", "day_name", "wake_time", "sleep_time", "activities"}, set(loaded))
 
+    def test_an_existing_day_file_not_written_by_the_script_is_kept(self):
+        seeded = self.days / "2026-03-02.json"
+        seeded.write_text('{"hand": "logged"}\n', encoding="utf-8")
+        r = self.run_writer(handoff(day("2026-03-02"), day("2026-03-03", name="Mardi")))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(seeded.read_text(encoding="utf-8"), '{"hand": "logged"}\n')
+        self.assertTrue((self.days / "2026-03-03.json").exists())
+        self.assertIn("2026-03-02", r.stderr)
+
+    def test_a_day_the_script_wrote_is_updated_by_a_later_handoff(self):
+        self.run_writer(handoff(day("2026-03-02", sleep=None, activities=[{"activity": "Work", "start": "07:00", "end": "20:00"}])))
+        self.run_writer(handoff(day("2026-03-02")))
+        d = json.loads((self.days / "2026-03-02.json").read_text(encoding="utf-8"))
+        self.assertEqual(d["sleep_time"], "23:30")
+
 
 if __name__ == "__main__":
     unittest.main()

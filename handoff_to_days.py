@@ -8,7 +8,11 @@ The hand-off file holds finished days (already merged from Life Cycle, taps and
 backfill, with no holes) plus the task lists. Each day is written to
 data/days/<date>.json in the same schema planning_to_json.py produces, so
 Analyse_semaine.ipynb reads it unchanged. Only the dates in the hand-off file
-are written; every other file in data/days/ is left alone. The whole file is
+are written; every other file in data/days/ is left alone. A day file that already
+exists and was not written by this script (for example one made from
+data/Planning.md) is never overwritten: the hand-off skips that date. The dates
+this script has written are remembered in written_days.json, next to the task
+backup, so a later hand-off can still update them. The whole file is
 validated first, so a bad file writes nothing. Running it again on the same
 file gives identical output.
 """
@@ -62,6 +66,7 @@ def main():
     ap.add_argument("input", help="hand-off file exported by the phone app")
     ap.add_argument("--out-dir", default="data/days", help="directory for the day files")
     ap.add_argument("--tasks-out", default="data/handoff/tasks_backup.json", help="where to save the task lists")
+    ap.add_argument("--manifest", default=None, help="dates this script wrote (default: written_days.json beside --tasks-out)")
     args = ap.parse_args()
 
     try:
@@ -78,18 +83,33 @@ def main():
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    manifest = Path(args.manifest) if args.manifest else Path(args.tasks_out).parent / "written_days.json"
+    try:
+        written = set(json.loads(manifest.read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        written = set()
+
+    skipped = []
     for day in days:
+        target = out_dir / f"{day['date']}.json"
+        if target.exists() and day["date"] not in written:
+            skipped.append(day["date"])
+            continue
         ordered = {field: day[field] for field in DAY_FIELDS}
-        (out_dir / f"{day['date']}.json").write_text(
-            json.dumps(ordered, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
+        target.write_text(json.dumps(ordered, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        written.add(day["date"])
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps(sorted(written)) + "\n", encoding="utf-8")
 
     if "tasks" in data:
         tasks_out = Path(args.tasks_out)
         tasks_out.parent.mkdir(parents=True, exist_ok=True)
         tasks_out.write_text(json.dumps(data["tasks"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print(f"{len(days)} jour(s) écrit(s) dans {out_dir}/", file=sys.stderr)
+    print(f"{len(days) - len(skipped)} jour(s) écrit(s) dans {out_dir}/", file=sys.stderr)
+    if skipped:
+        print(f"{len(skipped)} jour(s) déjà présent(s) et conservé(s) : {', '.join(skipped)}", file=sys.stderr)
 
 
 if __name__ == "__main__":
