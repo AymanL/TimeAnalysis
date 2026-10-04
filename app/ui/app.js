@@ -7,7 +7,7 @@ import * as backfill from './backfill.js';
 import * as tasks from './tasks.js';
 import * as settings from './settings.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const SCREENS = { today, backfill, tasks, settings };
 const store = createBrowserStore();
 const ui = { tab: 'today' };

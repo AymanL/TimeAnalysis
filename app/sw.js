@@ -1,6 +1,6 @@
 // Cache the app files so the page opens and works offline. Bump CACHE with the
 // version label in ui/app.js whenever files change, so an installed copy updates.
-const CACHE = 'temps-0.1.0';
+const CACHE = 'temps-0.2.0';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png',
